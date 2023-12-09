@@ -37,7 +37,7 @@ input.voice-transcribed {
 button {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #4CAF50;
+  background-color: #4c87af;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -112,5 +112,5 @@ body {
   background-image: url('../src/img.jpg'); /* Adjust the path based on your project structure */
   background-size: cover;
   background-position: center;
- 
+  font-family: 'Arial', sans-serif; /* Add your preferred font-family */
 }

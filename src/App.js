@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import useClipboard from 'react-use-clipboard';
-import { MdDelete } from "react-icons/md";
 import './App.css'; // Import your CSS file for styling
 
 const App = () => {
@@ -21,7 +20,6 @@ const App = () => {
   };
 
   const handleManualInputSubmit = async () => {
-    setManualInput('')
     setTextToCopy(manualInput);
     setIsVoiceTranscribed(false);
     await processChatGPTMessage(manualInput);
@@ -55,41 +53,39 @@ const App = () => {
       setLoading(true);
       setError(null);
 
-      // Simulate a response with random answers
-      const simulateChatGPTResponse = () => {
-        const randomResponses = [
-          "I'm sorry, I didn't understand that.",
-          "Could you please provide more details?",
-          "Interesting! Tell me more.",
-          "I'm still learning. Can you rephrase your question?",
-          "That's a great question! Let me think...",
-        ];
+      const response = await fetch('https://docs.chatbase.co/docs/message-a-chatbot', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 272f571d-4481-4c88-a100-1368bf7a7443',
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'user', content: "how are you" },
+          ],
+        }),
+      });
+      console.log("response is :",response);
 
-        return randomResponses[Math.floor(Math.random() * randomResponses.length)];
-      };
+      if (!response.ok) {
+        throw new Error('Error sending message to Chatbot');
+      }
 
-      const chatResponse = simulateChatGPTResponse();
+      const responseData = await response.json();
+      const chatResponse = responseData.choices[0].message.content;
 
       setChatHistory((prevHistory) => [
         ...prevHistory,
-        { id: new Date().getTime(), role: 'user', content: userMessage },
-        { id: new Date().getTime() + 1, role: 'assistant', content: chatResponse },
+        { role: 'user', content: userMessage },
+        { role: 'assistant', content: chatResponse },
       ]);
 
     } catch (error) {
-      console.error(error.message);
+      console.error('Error communicating with ChatGPT:', error);
       setError('Error communicating with ChatGPT. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const deleteMessage = (messageId) => {
-    setChatHistory((prevHistory) => prevHistory.filter((message) => message.id !== messageId));
-  };
-
-  const deleteConversation = () => {
-    setChatHistory([]);
   };
 
   if (!browserSupportsSpeechRecognition) {
@@ -98,7 +94,7 @@ const App = () => {
 
   return (
     <div className="container">
-      <h2>Voice Chat with Chatbot</h2>
+      <h2>Voice Chat with ChatGPT</h2>
       <div className="main-content">
         <input
           type="text"
@@ -110,28 +106,15 @@ const App = () => {
         />
         <button onClick={handleManualInputSubmit}>Submit</button>
         <button onClick={clearText}>Clear</button>
-
       </div>
-      <div className='text-center'>
-        <button onClick={deleteConversation} className='hover'>
-          <MdDelete className='del' />
-          
-        </button>
-      </div>
-
-
-
 
       {isLoading && <div className="loading-indicator">Loading...</div>}
       {error && <div className="error-message">{error}</div>}
 
       <div className="chat-history">
-        {chatHistory.map((message) => (
-          <div key={message.id} className={message.role}>
+        {chatHistory.map((message, index) => (
+          <div key={index} className={message.role}>
             {message.content}
-            <span className="delete-icon" onClick={() => deleteMessage(message.id)}>
-            <MdDelete className='del' />
-            </span>
           </div>
         ))}
       </div>
@@ -140,7 +123,6 @@ const App = () => {
         <button onClick={setCopied}>{isCopied ? 'Copied!' : 'Copy to clipboard'}</button>
         <button onClick={startListening}>Start Listening</button>
         <button onClick={SpeechRecognition.stopListening}>Stop Listening</button>
-
       </div>
     </div>
   );
