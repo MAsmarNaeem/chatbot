@@ -155,7 +155,7 @@ const App = () => {
         </button>
       </div>
 
-      {isLoading && <div className="loading-indicator"><ThreeDots
+      {isLoading && <div className="loading-indicator text-center"><ThreeDots
         height="80"
         width="80"
         radius="9"
