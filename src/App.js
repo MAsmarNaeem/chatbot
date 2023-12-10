@@ -3,6 +3,10 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import { MdDelete } from "react-icons/md";
 import useClipboard from 'react-use-clipboard';
 import { FaVolumeHigh } from "react-icons/fa6";
+import { FaVolumeXmark } from "react-icons/fa6";
+import { ThreeDots } from 'react-loader-spinner'
+import Sidebar from './Sidebar';
+
 import './App.css';
 
 const apiUrl = 'https://www.chatbase.co/api/v1/chat';
@@ -10,6 +14,8 @@ const apiUrl = 'https://www.chatbase.co/api/v1/chat';
 const App = () => {
   const [textToCopy, setTextToCopy] = useState('');
   const [manualInput, setManualInput] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   const [isCopied, setCopied] = useClipboard(textToCopy, {
     successDuration: 1000,
   });
@@ -103,6 +109,7 @@ const App = () => {
   const speakText = (text) => {
     let newText = new SpeechSynthesisUtterance();
     newText.text = text;
+
     window.speechSynthesis.speak(newText);
   };
 
@@ -113,11 +120,11 @@ const App = () => {
     setChatHistory([]);
   };
   const deleteMessage = (index) => {
-    // Create a copy of the chat history
+
     const updatedChatHistory = [...chatHistory];
-    // Remove the message at the specified index
+
     updatedChatHistory.splice(index, 1);
-    // Update the chat history state
+
     setChatHistory(updatedChatHistory);
   };
 
@@ -127,6 +134,7 @@ const App = () => {
 
   return (
     <div className="container row">
+
       <h2>Voice Chat with Kwan Leung</h2>
       <div className="main-content ">
 
@@ -142,29 +150,39 @@ const App = () => {
         <button onClick={clearText}>Clear</button>
       </div>
       <div className='text-center'>
-        <button className='text-center ' style={{backgroundColor:"#db4c44"}} onClick={deleteLastMessages}>
+        <button className='text-center ' style={{ backgroundColor: "#db4c44" }} onClick={deleteLastMessages}>
           <MdDelete />
         </button>
       </div>
 
-      {isLoading && <div className="loading-indicator">Loading...</div>}
+      {isLoading && <div className="loading-indicator"><ThreeDots
+        height="80"
+        width="80"
+        radius="9"
+        color="#4fa94d"
+        ariaLabel="three-dots-loading"
+        wrapperStyle={{}}
+        wrapperClassName=""
+        visible={true}
+      /></div>}
       {error && <div className="error-message">{error}</div>}
 
       <div className="chat-history">
         {chatHistory.map((message, index) => (
           <div key={index} className={message.role} style={{ display: 'flex', justifyContent: 'space-between' }}>
-            {/* Chat content */}
-            <span style={{ flex: 1 }}>{message.content}</span>
+            <div >
 
+              <span style={{ flex: 1 }}>{message.content}</span>
+            </div>
+            <div className='chat-icon'>
 
-            <span onClick={() => speakText(message.content)} style={{ cursor: "pointer", marginLeft: '10px' }}>
-              <FaVolumeHigh />
-            </span>
-
-
-            <span onClick={() => deleteMessage(index)} style={{ cursor: "pointer", marginLeft: '10px' }}>
-              <MdDelete />
-            </span>
+              <span onClick={() => speakText(message.content)} style={{ cursor: "pointer", marginLeft: '10px' }}>
+                <FaVolumeHigh />
+              </span>
+              <span onClick={() => deleteMessage(index)} style={{ cursor: "pointer", marginLeft: '10px' }}>
+                <MdDelete />
+              </span>
+            </div>
           </div>
         ))}
       </div>
