@@ -146,8 +146,12 @@ const App = () => {
           onKeyDown={handleKeyDown}
           className={isVoiceTranscribed ? 'voice-transcribed' : ''}
         />
-        <button onClick={handleManualInputSubmit}>Submit</button>
-        <button onClick={clearText}>Clear</button>
+       
+
+        
+        <button onClick={handleManualInputSubmit} className='btn1'>Submit</button>
+        <button onClick={clearText} className='btn'>Clear</button>
+       
       </div>
       <div className='text-center'>
         <button className='text-center ' style={{ backgroundColor: "#db4c44" }} onClick={deleteLastMessages}>
