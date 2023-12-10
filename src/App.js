@@ -126,7 +126,7 @@ const App = () => {
 
   return (
     <div className="container row">
-      <h2>Voice Chat with Chatbot</h2>
+      <h2>Voice Chat with Kwan Leung</h2>
       <div className="main-content ">
 
         <input
