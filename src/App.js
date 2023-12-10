@@ -82,6 +82,7 @@ const App = () => {
 
       const responseData = await response.json();
       const chatResponse = responseData.text;
+      speakText(chatResponse)
 
 
       setChatHistory((prevHistory) => [
