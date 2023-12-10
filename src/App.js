@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import { MdDelete } from "react-icons/md";
 import useClipboard from 'react-use-clipboard';
-import './App.css'; // Import your CSS file for styling
+import { FaVolumeHigh } from "react-icons/fa6";
+import './App.css';
+
+const apiUrl = 'https://www.chatbase.co/api/v1/chat';
 
 const App = () => {
   const [textToCopy, setTextToCopy] = useState('');
@@ -20,6 +24,7 @@ const App = () => {
   };
 
   const handleManualInputSubmit = async () => {
+    setManualInput('')
     setTextToCopy(manualInput);
     setIsVoiceTranscribed(false);
     await processChatGPTMessage(manualInput);
@@ -53,39 +58,66 @@ const App = () => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('https://docs.chatbase.co/docs/message-a-chatbot', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
+          Authorization: 'Bearer 272f571d-4481-4c88-a100-1368bf7a7443',
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 272f571d-4481-4c88-a100-1368bf7a7443',
         },
         body: JSON.stringify({
           messages: [
-            { role: 'user', content: "how are you" },
+            { role: 'user', content: userMessage },
           ],
+          chatbotId: 'hn8S7aaqSd8_slDFjFZZS',
+          stream: false,
+          model: 'gpt-3.5-turbo',
+          temperature: 0
         }),
       });
-      console.log("response is :",response);
 
       if (!response.ok) {
-        throw new Error('Error sending message to Chatbot');
+        const errorData = await response.json();
+        throw new Error(errorData.message);
       }
 
       const responseData = await response.json();
-      const chatResponse = responseData.choices[0].message.content;
+      const chatResponse = responseData.text;
+
 
       setChatHistory((prevHistory) => [
-        ...prevHistory,
+
         { role: 'user', content: userMessage },
         { role: 'assistant', content: chatResponse },
+        ...prevHistory,
       ]);
 
     } catch (error) {
-      console.error('Error communicating with ChatGPT:', error);
-      setError('Error communicating with ChatGPT. Please try again.');
+      console.error('Error communicating with Chatbase:', error);
+      setError('Error communicating with Chatbase. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const speakText = (text) => {
+    let newText = new SpeechSynthesisUtterance();
+    newText.text = text;
+    window.speechSynthesis.speak(newText);
+  };
+
+
+
+  const deleteLastMessages = () => {
+
+    setChatHistory([]);
+  };
+  const deleteMessage = (index) => {
+    // Create a copy of the chat history
+    const updatedChatHistory = [...chatHistory];
+    // Remove the message at the specified index
+    updatedChatHistory.splice(index, 1);
+    // Update the chat history state
+    setChatHistory(updatedChatHistory);
   };
 
   if (!browserSupportsSpeechRecognition) {
@@ -93,9 +125,10 @@ const App = () => {
   }
 
   return (
-    <div className="container">
-      <h2>Voice Chat with ChatGPT</h2>
-      <div className="main-content">
+    <div className="container row">
+      <h2>Voice Chat with Chatbot</h2>
+      <div className="main-content ">
+
         <input
           type="text"
           placeholder="Speak or Type your message"
@@ -107,18 +140,33 @@ const App = () => {
         <button onClick={handleManualInputSubmit}>Submit</button>
         <button onClick={clearText}>Clear</button>
       </div>
+      <div className='text-center'>
+        <button className='text-center ' style={{backgroundColor:"#db4c44"}} onClick={deleteLastMessages}>
+          <MdDelete />
+        </button>
+      </div>
 
       {isLoading && <div className="loading-indicator">Loading...</div>}
       {error && <div className="error-message">{error}</div>}
 
       <div className="chat-history">
         {chatHistory.map((message, index) => (
-          <div key={index} className={message.role}>
-            {message.content}
+          <div key={index} className={message.role} style={{ display: 'flex', justifyContent: 'space-between' }}>
+            {/* Chat content */}
+            <span style={{ flex: 1 }}>{message.content}</span>
+
+
+            <span onClick={() => speakText(message.content)} style={{ cursor: "pointer", marginLeft: '10px' }}>
+              <FaVolumeHigh />
+            </span>
+
+
+            <span onClick={() => deleteMessage(index)} style={{ cursor: "pointer", marginLeft: '10px' }}>
+              <MdDelete />
+            </span>
           </div>
         ))}
       </div>
-
       <div className="btn-style">
         <button onClick={setCopied}>{isCopied ? 'Copied!' : 'Copy to clipboard'}</button>
         <button onClick={startListening}>Start Listening</button>
